@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Age Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+
+  <!-- Flatpickr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      font-family: "Montserrat", sans-serif;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #4203a9 , #90bafc);
+      color: #fff;
+      padding: 20px;
+    }
+
+    .calculator {
+      width: 100%;
+      max-width: 500px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      position: relative;
+    }
+
+    .calculator h1 {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .calculator h1 span {
+      color: #ffff76;
+    }
+
+    .myP1 {
+      color: #f8f8f8;
+    }
+
+    .input-box {
+      margin: 30px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .input-box input {
+      padding: 15px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .input-box button {
+      background: #ffff76;
+      color: #333;
+      font-size: 18px;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .input-box button:hover {
+      background: #e6e65c;
+    }
+
+    #result {
+      font-size: 20px;
+      margin-top: 20px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.4s ease;
+    }
+
+    #result.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #result span {
+      color: #ffff76;
+      font-weight: bold;
+    }
+
+    #toast {
+      display: none;
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff4d4d;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      animation: fadeInOut 3s;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; bottom: 20px; }
+      10%, 90% { opacity: 1; bottom: 30px; }
+      100% { opacity: 0; bottom: 20px; }
+    }
+
+    @media (max-width: 500px) {
+      .calculator h1 {
+        font-size: 32px;
+      }
+
+      .input-box input,
+      .input-box button {
+        font-size: 16px;
+      }
+
+      #result {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="calculator">
+      <h1>JavaScript<br><span>Age Calculator</span></h1>
+      <p class="myP1">(Choose your date of birth.)</p>
+      <div class="input-box">
+        <input type="text" id="date" placeholder="Select your birth date" readonly>
+        <button onclick="calculateAge()">Calculate</button>
+      </div>
+      <p id="result"></p>
+      <div id="toast"></div>
+    </div>
+  </div>
+
+  <!-- Flatpickr Script -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    const userInput = document.getElementById("date");
+    const result = document.getElementById("result");
+    const toast = document.getElementById("toast");
+
+    // Initialize Flatpickr
+    flatpickr("#date", {
+      dateFormat: "Y-m-d",
+      maxDate: "today"
+    });
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.style.display = "block";
+      setTimeout(() => {
+        toast.style.display = "none";
+      }, 3000);
+    }
+
+    function calculateAge() {
+      if (!userInput.value) {
+        showToast("Please choose a date of birth.");
+        return;
+      }
+
+      const birthDate = new Date(userInput.value);
+      const d1 = birthDate.getDate();
+      const m1 = birthDate.getMonth() + 1;
+      const y1 = birthDate.getFullYear();
+
+      const today = new Date();
+      const d2 = today.getDate();
+      const m2 = today.getMonth() + 1;
+      const y2 = today.getFullYear();
+
+      let d3, m3, y3;
+      y3 = y2 - y1;
+
+      if (m2 >= m1) {
+        m3 = m2 - m1;
+      } else {
+        y3--;
+        m3 = 12 + m2 - m1;
+      }
+
+      if (d2 >= d1) {
+        d3 = d2 - d1;
+      } else {
+        m3--;
+        d3 = getDaysInMonth(y1, m1) + d2 - d1;
+      }
+
+      if (m3 < 0) {
+        m3 = 11;
+        y3--;
+      }
+
+      result.classList.remove("show"); // reset animation
+      void result.offsetWidth; // trigger reflow
+      result.innerHTML = `You are <span>${y3}</span> years, <span>${m3}</span> months and <span>${d3}</span> days old`;
+      result.classList.add("show");
+    }
+
+    function getDaysInMonth(year, month) {
+      return new Date(year, month, 0).getDate();
+    }
+  </script>
+</body>
+</html>
